@@ -51,7 +51,6 @@ public class HomeWDemoWeb {
     @Test
     @Description("Ввод в поисковую строку Laptop")
     void enterInSearchBar() {
-        String laptop = "<[14.1-inch Laptop]>";
         String response =
         given()
                 .contentType("application/json;")

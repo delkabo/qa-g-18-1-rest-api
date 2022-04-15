@@ -4,6 +4,8 @@ import io.qameta.allure.Description;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import models.Credentials;
+import models.GenerateTokenResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +14,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static listener.CustomAllureListener.withCustomTemplates;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class BookStoreTests {
@@ -142,15 +145,17 @@ public class BookStoreTests {
 
     @Test
     void generatedTokenWithModelTest() {
-        String data = "{ \"userName\": \"alex\", " +
-                "\"password\": \"asdsad#frew_DFS2\" }";
 
-//        RestAssured.filters(new AllureRestAssured()); move to BeforeAll
+        Credentials credentials = new Credentials();
+        credentials.setUserName("alex");
+        credentials.setPassword("asdsad#frew_DFS2");
+
+        GenerateTokenResponse tokenResponse = new GenerateTokenResponse();
 
         given()
                 .filter(withCustomTemplates())
                 .contentType(JSON)
-                .body(data)
+                .body(credentials)
                 .log().uri()
                 .log().body()
                 .when()
@@ -160,9 +165,12 @@ public class BookStoreTests {
                 .log().body()
                 .statusCode(200)
                 .body(matchesJsonSchemaInClasspath("schemas/GeneratedToken_response_scheme.json"))
-                .body("status", is("Success"))
-                .body("result", is("User authorized successfully."))
-                .body("token.size()", greaterThan(10));
+                .extract().as(GenerateTokenResponse.class);
+
+        assertThat(tokenResponse.getStatus()).isEqualTo("Success");
+        assertThat(tokenResponse.getResult()).isEqualTo("User authorized successfully.");
+        assertThat(tokenResponse.getExpires()).hasSizeGreaterThan(10);
+        assertThat(tokenResponse.getToken()).hasSizeGreaterThan(10).startsWith("eyJ");
     }
 
 

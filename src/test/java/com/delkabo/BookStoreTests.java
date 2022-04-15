@@ -141,7 +141,7 @@ public class BookStoreTests {
     }
 
     @Test
-    void generatedTokenJsonSchemeCheckTest1() {
+    void generatedTokenWithModelTest() {
         String data = "{ \"userName\": \"alex\", " +
                 "\"password\": \"asdsad#frew_DFS2\" }";
 

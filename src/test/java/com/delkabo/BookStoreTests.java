@@ -6,6 +6,8 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import models.Credentials;
 import models.GenerateTokenResponse;
+import models.lombok.CredentialsLombok;
+import models.lombok.GenerateTokenResponseLombok;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -166,6 +168,36 @@ public class BookStoreTests {
                 .statusCode(200)
                 .body(matchesJsonSchemaInClasspath("schemas/GeneratedToken_response_scheme.json"))
                 .extract().as(GenerateTokenResponse.class);
+
+        assertThat(tokenResponse.getStatus()).isEqualTo("Success");
+        assertThat(tokenResponse.getResult()).isEqualTo("User authorized successfully.");
+        assertThat(tokenResponse.getExpires()).hasSizeGreaterThan(10);
+        assertThat(tokenResponse.getToken()).hasSizeGreaterThan(10).startsWith("eyJ");
+    }
+
+    @Test
+    void generatedTokenWithLombokTest() {
+
+        CredentialsLombok credentials = new CredentialsLombok();
+        credentials.setUserName("alex");
+        credentials.setPassword("asdsad#frew_DFS2");
+
+        GenerateTokenResponseLombok tokenResponse = new GenerateTokenResponseLombok();
+
+        given()
+                .filter(withCustomTemplates())
+                .contentType(JSON)
+                .body(credentials)
+                .log().uri()
+                .log().body()
+                .when()
+                .post("/Account/v1/GenerateToken")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .body(matchesJsonSchemaInClasspath("schemas/GeneratedToken_response_scheme.json"))
+                .extract().as(GenerateTokenResponseLombok.class);
 
         assertThat(tokenResponse.getStatus()).isEqualTo("Success");
         assertThat(tokenResponse.getResult()).isEqualTo("User authorized successfully.");

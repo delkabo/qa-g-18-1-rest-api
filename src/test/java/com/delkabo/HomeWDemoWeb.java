@@ -7,8 +7,8 @@ import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
 
 public class HomeWDemoWeb {
 
@@ -59,6 +59,7 @@ public class HomeWDemoWeb {
                 .then()
                 .log().all()
                 .statusCode(200)
+                .body("label", hasSize(greaterThan(0)))
                 .extract().asString();
         assertThat(response).isNotEqualTo("");
     }

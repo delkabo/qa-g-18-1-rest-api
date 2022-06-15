@@ -3,7 +3,6 @@ package com.delkabo;
 import io.qameta.allure.Description;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import models.Credentials;
 import models.GenerateTokenResponse;
 import models.lombok.CredentialsLombok;
@@ -11,15 +10,16 @@ import models.lombok.GenerateTokenResponseLombok;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static listener.CustomAllureListener.withCustomTemplates;
+import static models.Specs.request;
+import static models.Specs.responseSpec;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class BookStoreTests {
+public class BookStoreTestsSpecModel {
 
     @BeforeAll
     static void beforeAll() {
@@ -27,25 +27,13 @@ public class BookStoreTests {
     }
 
     @Test
-    void getBookWithAllLogsTest() {
+    void getBookWithSomeLogsTestSpec() {
         given()
-                .log().all()
+                .spec(request)
                 .when()
                 .get("/BookStore/v1/Books")
                 .then()
-//                    .log().all()
-                .body("books", hasSize(greaterThan(0)));
-    }
-
-
-    @Test
-    void getBookWithSomeLogsTest() {
-        given()
-                .log().uri()
-                .log().body()
-                .when()
-                .get("/BookStore/v1/Books")
-                .then()
+                .spec(responseSpec)
                 .log().status()
                 .log().body()
                 .body("books", hasSize(greaterThan(0)));
@@ -70,6 +58,31 @@ public class BookStoreTests {
                 .body("status", is("Success"))
                 .body("result", is("User authorized successfully."))
                 .body("token.size()", greaterThan(10));
+    }
+
+    @Test
+    void generatedTokenTestSpec() {
+
+        String data = "{ \"userName\": \"alex\", " +
+                "\"password\": \"asdsad#frew_DFS2\" }";
+
+        Credentials credentials = new Credentials();
+        credentials.setUserName("alex");
+        credentials.setPassword("asdsad#frew_DFS2");
+
+        given()
+                .spec(request)
+                .body(data)
+                .when()
+                .post("/Account/v1/GenerateToken")
+                .then()
+                .spec(responseSpec)
+                .log().status()
+                .log().body()
+                .body("status", is("Success"))
+                .body("result", is("User authorized successfully."))
+                .body("token.size()", greaterThan(10));
+
     }
 
     @Test
@@ -198,11 +211,6 @@ public class BookStoreTests {
                 .statusCode(200)
                 .body(matchesJsonSchemaInClasspath("schemas/GeneratedToken_response_scheme.json"))
                 .extract().as(GenerateTokenResponseLombok.class);
-
-        System.out.println(tokenResponse.getStatus() + "\n"
-                + tokenResponse.getResult() + "\n"
-                + tokenResponse.getExpires() + "\n"
-                + tokenResponse.getToken());
 
         assertThat(tokenResponse.getStatus()).isEqualTo("Success");
         assertThat(tokenResponse.getResult()).isEqualTo("User authorized successfully.");

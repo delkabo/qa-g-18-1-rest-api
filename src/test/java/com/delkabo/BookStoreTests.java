@@ -7,6 +7,7 @@ import io.restassured.http.ContentType;
 import models.Credentials;
 import models.GenerateTokenResponse;
 import models.lombok.CredentialsLombok;
+import models.lombok.GenTokRespLambMain;
 import models.lombok.GenerateTokenResponseLombok;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -152,11 +153,12 @@ public class BookStoreTests {
         credentials.setUserName("alex");
         credentials.setPassword("asdsad#frew_DFS2");
 
-        GenerateTokenResponse tokenResponse = new GenerateTokenResponse();
+        System.out.println(credentials.getUserName() + " " + credentials.getPassword());
 
+        GenerateTokenResponse tokenResponse =
         given()
                 .filter(withCustomTemplates())
-                .contentType(JSON)
+                .contentType(ContentType.JSON)
                 .body(credentials)
                 .log().uri()
                 .log().body()
@@ -182,8 +184,9 @@ public class BookStoreTests {
         credentials.setUserName("alex");
         credentials.setPassword("asdsad#frew_DFS2");
 
-        GenerateTokenResponseLombok tokenResponse = new GenerateTokenResponseLombok();
+        System.out.println(credentials.getUserName() + " " + credentials.getPassword());
 
+        GenerateTokenResponseLombok tokenResponse =
         given()
                 .filter(withCustomTemplates())
                 .contentType(JSON)
@@ -199,7 +202,8 @@ public class BookStoreTests {
                 .body(matchesJsonSchemaInClasspath("schemas/GeneratedToken_response_scheme.json"))
                 .extract().as(GenerateTokenResponseLombok.class);
 
-        System.out.println(tokenResponse.getStatus() + "\n"
+
+        System.out.println("MY TEST " + tokenResponse.getStatus() + "\n"
                 + tokenResponse.getResult() + "\n"
                 + tokenResponse.getExpires() + "\n"
                 + tokenResponse.getToken());
@@ -208,8 +212,7 @@ public class BookStoreTests {
         assertThat(tokenResponse.getResult()).isEqualTo("User authorized successfully.");
         assertThat(tokenResponse.getExpires()).hasSizeGreaterThan(10);
         assertThat(tokenResponse.getToken()).hasSizeGreaterThan(10).startsWith("eyJ");
+
     }
-
-
 }
 
